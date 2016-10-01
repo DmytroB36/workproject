@@ -94,21 +94,20 @@
       public function actionList($args){
         $args = func_get_arg(0);
         extract($args);
-        $errors = [];
         $sqlParts = '';
-        $sqlParams = '';
+        $sqlParams = [];
         if( ! empty($id)){
-            $sqlParts .= "\nAND id = ?i";
-            $sqlParams[] = $id;
+            $sqlParts .= "\nAND id = :id";
+            $sqlParams['id'] = $id;
         }
 
         if( ! empty($limitFrom)){
-            $sqlParts .= "\nLIMIT ?i";
-            $sqlParams[] = $limitFrom;
+            $sqlParts .= "\nLIMIT :limitfrom";
+            $sqlParams['limitfrom'] = $limitFrom;
 
             if( ! empty($limitCount)){
-                $sqlParts .= ", ?i";
-                $sqlParams[] = $limitCount;
+                $sqlParts .= ", :limitcount";
+                $sqlParams['limitcount'] = $limitCount;
             }
          }
          $students = [];
@@ -127,7 +126,7 @@ WHERE
   1 = 1
   $sqlParts
 EOL
-        , 'str');
+        , $sqlParams);
 
         while($row = db::fetch($res)){
             $students[] = new Student($row);
@@ -192,7 +191,7 @@ EOL
 
 
           if(empty($errors)){
-            db::query("DELETE FROM students WHERE id = ?i", $id);
+            db::query("DELETE FROM students WHERE id = :id", ['id' => $id]);
             if(db::affectedRows() > 0){
                  App::$message->push(\Framework\message::TYPE_INFO, "Студент был успешно удален из базы");
             }

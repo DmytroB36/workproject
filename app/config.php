@@ -7,8 +7,8 @@
 
       protected $options = [
         'dbHost' => '127.0.0.1',
-        'dbUser' => 'dmitry',
-        'dbPass' => 'xz2200',
+        'dbUser' => '',
+        'dbPass' => '',
         'dbName' => 'workproject',
         'dbCharset' => 'utf8',
 

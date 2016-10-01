@@ -11,6 +11,13 @@
       private static $lastError;
 
       /**
+      * Хранятся параметры запроса для передачи в колбак ф-ю
+      *
+      * @var array
+      */
+      private static $queryParams = [];
+
+      /**
       * Соединение с базой данных по переданным параметрам
       *
       * @param mixed $host
@@ -66,9 +73,9 @@
       *
       * @return resource
       */
-      public static function query(){
+      public static function query($sql, $params){
           self::connect();
-          return self::rawQuery(self::prepareQuery(func_get_args()));
+          return self::rawQuery(self::prepareQuery($sql, $params));
       }
 
 
@@ -82,113 +89,97 @@
       }
 
       /**
+      * Обработка параметров переданных в строке запроса
+      *
+      * @param mixed $matches
+      */
+      private static function grabParams($matches){
+          /*
+            $matches[0] - всё вхождение
+            $matches[1] - откр. кавычка или пусто
+            $matches[2] - двоеточие
+            $matches[3] - название параметра
+            $matches[4] - закр. кавычка или пусто
+          */
+          if( ! isset(self::$queryParams[ $matches[3] ])){
+              throw new \Exception( "Отсутствует один из параметров переданных в запрос" );
+          }
+          $value = self::$queryParams[ $matches[3] ];
+          if(empty($matches[1])){
+            $value = self::escapeNumber($value);
+          }else{
+            $value = self::escapeString($value);
+          }
+          return $value;
+      }
+
+      /**
       * Обрадотка строки запроса на предмет наличия плейсхолдеров и
       * из безопасная обработка
       *
       * @param mixed $args
       */
-      private static function prepareQuery($args){
+      private static function prepareQuery($sql, $params){
         $query = '';
-        $raw   = array_shift($args);
-        /** разбиваем строку запроса на части плейсхолдеры и чистый sql по очереди*/
-        $array = preg_split('~(\?[nsiuap])~u',$raw,null,PREG_SPLIT_DELIM_CAPTURE);
-        $anum  = count($args); // кол-во аргументов
-        $pnum  = floor(count($array) / 2); // кол-во плейсхолдеров
-        if( $pnum != $anum ){
-            self::$lastError = "Number of args ($anum) doesn't match number of placeholders ($pnum) in [$raw]";
-        }
-        foreach($array as $i => $part){
-            if( ($i % 2) == 0 ){
-                $query .= $part;
-                continue;
+        $raw   = $sql;
+        self::$queryParams = $params;
+        /*
+            находим параметры видов
+            :param1 - обрабатывать как число
+            ':param1' - обрабатывать как строку
+        */
+        $sqlSafe = preg_replace_callback('/(\'?)(\:)([a-zA-Z0-9_]+)(\'?)/', [__CLASS__, 'grabParams'], $sql);
+        return $sqlSafe;
+    }
+
+      /**
+      * Обработка числового параметра
+      *
+      * @param int|float|array $value
+      * @return string|int|float;
+      */
+      private static function escapeNumber($value){
+        if(is_array($value)){
+            /* через запятую для IN */
+            $res = [];
+            foreach ($value as $val){
+                $res[] = self::escapeNumber($val);
             }
-            $value = array_shift($args);
-            switch ($part){
-                case '?n':
-                    $part = self::escapeIdent($value);
-                    break;
-                case '?s':
-                    $part = self::escapeString($value);
-                    break;
-                case '?i':
-                    $part = self::escapeInt($value);
-                    break;
-                case '?a':
-                    $part = self::createIN($value);
-                    break;
-                case '?u':
-                    $part = self::createSET($value);
-                    break;
-                case '?p':
-                    $part = $value;
-                    break;
+            if( ! empty($res)){
+                return implode(',', $res);
             }
-            $query .= $part;
+            return 'null';
+        }elseif(is_bool($value)){
+            return (int)$value;
+        }elseif(preg_match('/^\-*\d+(\.\d+)?$/', $value, $matches)){
+            /* вместо is_numeric гер. выражение чтобы не проходили числа в других системах счисления */
+            return $matches[0];
         }
-        return $query;
-    }
+        return 'null';
+      }
 
-    private static function escapeInt($value){
-        if ($value === NULL){
-            return 'NULL';
-        }
-        if( ! is_numeric($value)){
-            self::$lastError = "Integer (?i) placeholder expects numeric value, ".gettype($value)." given";
-            return false;
-        }
-        if(is_float($value)){
-            $value = number_format($value, 0, '.', '');
-        }
-        return $value;
-    }
-
-    private static function escapeString($value){
-        if ($value === NULL){
-            return 'NULL';
-        }
-        return "'".mysqli_real_escape_string(self::$linkDb, $value)."'";
-    }
-
-    private static function escapeIdent($value){
-        if($value){
-            return "`".str_replace("`","``",$value)."`";
+      /**
+      * Обработка строкового параметра
+      *
+      * @param string|array $value
+      * @return string;
+      */
+      private static function escapeString($value){
+        if(is_array($value)){
+            /* через запятую для IN */
+            $res = [];
+            foreach ($value as $val){
+                $res[] = self::escapeString($val);
+            }
+            if( ! empty($res)){
+                return implode(',', $res);
+            }
+            return 'null';
         }else{
-             self::$lastError = "Empty value for identifier (?n) placeholder";
+            $res = "'".mysqli_real_escape_string(self::$linkDb, $value)."'";
+            return $res;
         }
-    }
-
-    private static function createIN($data){
-        if( ! is_array($data)){
-            self::$lastError = "Value for IN (?a) placeholder should be array";
-            return;
-        }
-        if ( ! $data){
-            return 'NULL';
-        }
-        $query = $comma = '';
-        foreach ($data as $value){
-            $query .= $comma.self::escapeString($value);
-            $comma  = ",";
-        }
-        return $query;
-    }
-
-    private static function createSET($data){
-        if( ! is_array($data)){
-            self::$lastError = "SET (?u) placeholder expects array, ".gettype($data)." given";
-            return;
-        }
-        if( ! $data){
-            self::$lastError = "Empty array for SET (?u) placeholder";
-            return;
-        }
-        $query = $comma = '';
-        foreach ($data as $key => $value){
-            $query .= $comma.self::escapeIdent($key).'='.self::escapeString($value);
-            $comma  = ",";
-        }
-        return $query;
-    }
+      }
 
     /**
     * id последней добавленной записи

@@ -197,36 +197,37 @@
         if( ! isset($this->id)){
             db::query(<<<EOL
 INSERT INTO `students` (first_name, family_name, sex, age, group_name, faculty)
-VALUE (?s, ?s, ?i, ?i, ?s, ?s)
+VALUE (':first_name', ':family_name', :sex, :age, ':group_name', ':faculty')
 EOL
-        , $this->first_name,
-          $this->family_name,
-          $this->sex,
-          $this->age,
-          $this->group_name,
-          $this->faculty);
+        , ['first_name'  => $this->first_name,
+           'family_name' =>$this->family_name,
+           'sex' => $this->sex,
+           'age' => $this->age,
+           'group_name' => $this->group_name,
+           'faculty' => $this->faculty]);
       }else{
            db::query(<<<EOL
 UPDATE
   students
 SET
-  first_name = ?s,
-  family_name = ?s,
-  sex = ?i,
-  age = ?i,
-  group_name = ?s,
-  faculty = ?s
+  first_name = ':first_name',
+  family_name = ':family_name',
+  sex = :sex,
+  age = :age,
+  group_name = ':group_name',
+  faculty = ':faculty'
 WHERE
-  id = ?i;
+  id = :id;
 EOL
            ,
-          $this->first_name,
-          $this->family_name,
-          $this->sex,
-          $this->age,
-          $this->group_name,
-          $this->faculty,
-          $this->id);
+          ['first_name'  => $this->first_name,
+           'family_name' =>$this->family_name,
+           'sex' => $this->sex,
+           'age' => $this->age,
+           'group_name' => $this->group_name,
+           'faculty' => $this->faculty,
+           'id' => $this->id]
+          );
       }
       return db::affectedRows() > 0;
     }
@@ -240,9 +241,9 @@ EOL
         $data = db::fetch(db::query(<<<EOL
 SELECT id, first_name, family_name, sex, age, group_name, faculty
 FROM `students`
-WHERE id = ?i
+WHERE id = :id
 EOL
-    , (int)$id));
+    , ['id' => (int)$id]));
         if( ! empty($data)){
             return new self($data);
         }
