@@ -1,0 +1,51 @@
+<form class="form-horizontal" action="/students/save" method="get">
+    <?php
+        if( ! empty($student->getId())){
+            ?><input type="hidden" name="id" value="<?=$student->getId()?>"><?php
+        }
+    ?>
+    <div class="control-group">
+        <label class="control-label" for="input_first_name">Имя</label>
+        <div class="controls">
+            <input type="text" id="input_first_name" name="first_name" value="<?=$student->getFirst_name()?>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="input_family_name">Фамилия</label>
+        <div class="controls">
+            <input type="text" id="input_family_name" name="family_name" value="<?=$student->getFamily_name()?>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="input_sex">Пол</label>
+        <div class="controls">
+            <select name="sex" id="input_sex">
+                <option value="1" <?=$student->getSex() == 1 ? 'selected=selected' : ''?>>Мужской</option>
+                <option value="0" <?=empty($student->getSex()) ? 'selected=selected' : ''?>>Женский</option>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="input_age">Возраст</label>
+        <div class="controls">
+            <input type="text" id="input_age" name="age" value="<?=$student->getAge()?>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="input_group_name">Группа</label>
+        <div class="controls">
+            <input type="text" id="input_group_name" name="group_name" value="<?=$student->getGroup_name()?>">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="input_faculty">Факультет</label>
+        <div class="controls">
+            <input type="text" id="input_faculty" name="faculty" value="<?=$student->getFaculty()?>">
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button type="submit" class="btn">Сохранить</button>
+       </div>
+    </div>
+</form>

@@ -1,0 +1,26 @@
+<div class="error-list-box">
+<?php
+while($msg = $message->pop(\Framework\message::TYPE_ERROR)){ ?>
+    <div class="alert alert-error">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <?=$msg?>
+    </div>
+<?php
+}
+while($msg = $message->pop(\Framework\message::TYPE_INFO)){ ?>
+    <div class="alert alert-success">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <?=$msg?>
+    </div>
+<?php
+}
+while($msg = $message->pop(\Framework\message::TYPE_WARNING)){ ?>
+    <div class="alert alert-info">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <?=$msg?>
+    </div>
+<?php
+}?>
+</div>
+
+

@@ -1,0 +1,21 @@
+<?php
+    /** @var \src\students\Student */
+    $student;
+?>
+<tr>
+    <td><?=\Framework\html::security( $student->getId() )?></td>
+    <td><?=\Framework\html::security( $student->getFirst_name() )?></td>
+    <td><?=\Framework\html::security( $student->getFamily_name() )?></td>
+    <td><?=empty($student->getSex()) ? "Ж" : "М"?></td>
+    <td><?=\Framework\html::security( $student->getAge() )?></td>
+    <td><?=\Framework\html::security( $student->getGroup_name() )?></td>
+    <td><?=\Framework\html::security( $student->getFaculty() )?></td>
+
+    <td>
+        <div class="btn-group">
+            <a class="btn" href="/students/edit?id=<?=$student->getId()?>"><i class="icon-edit"></i></a>
+            <a class="btn" href="/students/remove?id=<?=$student->getId()?>"><i class="icon-remove-sign"></i></a>
+        </div>
+    </td>
+
+</tr>
