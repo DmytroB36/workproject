@@ -12,6 +12,8 @@
 
       const CONTROLLER_ACTION_NOT_FOUND = 3;
 
+      const DB_CANTCONNECT = 4;
+
       /**
       * При генерации указываем только код как константу этого класса
       * Заготовки текста будут подставлены автоматически
@@ -34,6 +36,9 @@
                 break;
             case self::CONTROLLER_ACTION_NOT_FOUND:
                 $message = "Указанное действие не досутпно в этом контроллере";
+                break;
+            case self::DB_CANTCONNECT:
+                $message = "Невозможно соединиться с базой данных";
                 break;
             default:
                 $message = 'UNKNOWN ERROR';

@@ -10,8 +10,9 @@ $registry = new \Framework\Registry();
 $request = new \Framework\request();
 $registry->set('rootPath', __ROOT__);
 $registry->set('webRootPath', __WEBROOT__);
+$registry->set('configPath', __ROOT__.'/app');
 
-\App\App::$config = new App\config();
+\App\App::$config = new App\config($registry->get('configPath'));
 \App\App::$registry = $registry;
 \App\App::$message = new Framework\message();
 

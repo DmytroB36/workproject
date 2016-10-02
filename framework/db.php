@@ -31,11 +31,11 @@
         }
         $res = mysqli_connect($host, $user, $pass, $dbname);
         if(is_object($res) && $res->select_db($dbname)){
-            $res->set_charset(\App\App::$config->get('dbCharset'));
+            $res->set_charset(\App\App::$config->db_charset());
             self::$linkDb = $res;
             return true;
         }else{
-            throw new Exception("Невозможно подключиться к БД");
+            throw new \Framework\Exception(\Framework\Exception::DB_CANTCONNECT);
         }
       }
 
@@ -61,10 +61,10 @@
             return self::$linkDb;
         }
         return self::_connect(
-            \App\App::$config->get('dbHost'),
-            \App\App::$config->get('dbUser'),
-            \App\App::$config->get('dbPass'),
-            \App\App::$config->get('dbName')
+            \App\App::$config->db_host(),
+            \App\App::$config->db_user(),
+            \App\App::$config->db_pass(),
+            \App\App::$config->db_dbname()
         );
       }
 

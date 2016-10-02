@@ -1,0 +1,5 @@
+{
+    "studentsppage": 20,
+    "defaultcontroller": "Students",
+    "defaultaction": "Hello"
+}

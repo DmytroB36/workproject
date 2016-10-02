@@ -45,7 +45,7 @@
         */
         private static function getTemplatePath(){
             return $path = __ROOT__
-                           .\App\App::$config->get('templatePath')
+                           .\App\App::$config->html_templatepath()
                            .'/';
         }
 
@@ -81,9 +81,9 @@
             if( ! empty($fileName)){
                 $subTemplateHtml = self::render($fileName, $data, $skipSecurity);
             }
-            return self::render(\App\App::$config->get('mainLayoutName'),
+            return self::render(\App\App::$config->html_mainlayoutname(),
                                     ['subTemplateHtml' => $subTemplateHtml,
-                                    'siteTitle' => \App\App::$config->get('siteTitle')],
+                                    'siteTitle' => \App\App::$config->html_sitetitle()],
                                 true    );
         }
     }

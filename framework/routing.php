@@ -49,8 +49,8 @@ class Routing{
             $uri = ltrim($uri, '/');
             $args = [];
             if(empty($uri)){
-                $controllerName = \App\App::$config->get('defaultController');
-                $actionName     = \App\App::$config->get('defaultAction');
+                $controllerName = \App\App::$config->app_defaultcontroller();
+                $actionName     = \App\App::$config->app_defaultaction();
               }else{
                 foreach ($this->routes as $route => $destin){
                      if(preg_match($route, $uri)){
