@@ -1,0 +1,11 @@
+{
+    "actionwithparams": {
+        "delimiter": "/",
+        "patern" : "#controller/#action/#params"
+    },
+
+    "default": {
+        "delimiter": "/",
+        "patern" : "#controller/#action"
+    }
+}
