@@ -10,24 +10,84 @@ use Framework\Response as Response;
 
 class Routing{
 
+    protected $routeFilePath = '';
+
     /** @var \Framework\request */
-    private $request;
+    protected $request;
 
     /**
     * Список доступных маршрутов
     */
-    private $routes = array(
-            '#([-_a-z0-9]+)/([-_a-z0-9]+)/(.*)#'                     => '$1/$2/$3',
-            '#([-_a-z0-9]+)/([-_a-z0-9]+)[\?]?(.*)#'                 => '$1/$2/$3',
-            '#([-_a-z0-9]+)/([-_a-z0-9]+)/([-_a-z0-9]+)[\?]?(.*)#'   => '$1/$2/$3/$4',
-            '#([-_a-z0-9]+)[\?]?(.*)#'                               => '$1/$2',
-        );
+     protected $routes = [];
+
+     /**
+     * переменные которые подменяются в строке маршрута на регулярные выражения
+     */
+    protected $routeVariables = array(
+        'controller' => '([a-zA-Z-_0-9]+)',
+        'action'     => '([a-zA-Z-_0-9]+)',
+        'params'     => '{0,1}(\?.*)',
+    );
 
 
 
-    public function __construct(\Framework\request $request){
+    /**
+    * put your comment there...
+    *
+    * @param \Framework\request $request
+    * @param string $path путь к файлу маршрутов
+    */
+    public function __construct(\Framework\request $request, $path){
+        $this->routeFilePath = $path;
         $this->request = $request;
     }
+
+    /**
+    * Возвращает список маршрутов
+    *
+    * @return array
+    */
+    protected function getRoutes(){
+        if(empty($this->routes)){
+            $this->routes = $this->loadRoutes();
+        }
+        return $this->routes;
+    }
+
+    /**
+    * Получает список маршрутов из файла и
+    * проводит необходимые преобразования для использования в preg_match
+    *
+    * @return array
+    */
+    protected function loadRoutes(){
+        $file = file_get_contents($this->routeFilePath.'/routes.json');
+        $routes = json_decode($file, true);
+        $routesReg = $this->routesTranslation($routes);
+        return $routesReg;
+    }
+
+    /**
+    * Замена переменных в строке маршрутов на регулярные выражения
+    *
+    * @param array $routes
+    * @return array
+    */
+    protected function routesTranslation($routes){
+        foreach ($routes as $key => $route) {
+            $w = explode($route['delimiter'], $route['patern']);
+            foreach ($w as $k => $word){
+                if(substr($word, 0, 1) == '#'){
+                    $w[$k] = $this->routeVariables[substr($word, 1)];
+                }
+            }
+            $route = implode($route['delimiter'], $w);
+            $routes[$key]['patern'] = $route;
+        }
+        return $routes;
+    }
+
+
 
     /**
     * Получить переданный URI
@@ -44,6 +104,7 @@ class Routing{
     *
     */
     public function run(){
+        $this->getRoutes();
         try{
             $uri = $this->getURI();
             $uri = ltrim($uri, '/');
@@ -52,13 +113,17 @@ class Routing{
                 $controllerName = \App\App::$config->app_defaultcontroller();
                 $actionName     = \App\App::$config->app_defaultaction();
               }else{
-                foreach ($this->routes as $route => $destin){
-                     if(preg_match($route, $uri)){
-                        $internalRoute = preg_replace($route, $destin, $uri);
-                        $segments = explode('/', $internalRoute);
-                        $controllerName = ucfirst(array_shift($segments));
-                        $actionName = array_shift($segments);
-                        parse_str(array_shift($segments), $args);
+                foreach ($this->routes as $routeTitle => $route){
+                    $string = '#'.$route['patern'].'#';
+                     if(preg_match($string, $uri, $matches)){
+                        $controllerName = ucfirst($matches[1]);
+                        $actionName = $matches[2];
+                        if(!empty($matches[3])){
+                            if(substr($matches[3], 0, 1) == "?"){
+                                $matches[3] = substr($matches[3], 1);
+                            }
+                            parse_str($matches[3], $args);
+                        }
                         break;
                     }
                 }

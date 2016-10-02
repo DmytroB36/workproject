@@ -21,7 +21,7 @@ class Registry implements \ArrayAccess{
             $this->data[$key] = $val;
             return true;
         }else{
-            throw new \Exception("Попытка перезаписать значение переменно ".$key);
+            throw new \Framework\Exception("Попытка перезаписать значение переменно ".$key);
         }
 
     }

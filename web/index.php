@@ -11,12 +11,13 @@ $request = new \Framework\request();
 $registry->set('rootPath', __ROOT__);
 $registry->set('webRootPath', __WEBROOT__);
 $registry->set('configPath', __ROOT__.'/app');
+$registry->set('routesPath', __ROOT__.'/app');
 
 \App\App::$config = new App\config($registry->get('configPath'));
 \App\App::$registry = $registry;
 \App\App::$message = new Framework\message();
 
-$router = new \Framework\Routing($request);
+$router = new \Framework\Routing($request, $registry->get('routesPath'));
 
 $router->run();
 
