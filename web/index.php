@@ -21,5 +21,7 @@ $router = new \Framework\Routing($request, $registry->get('routesPath'));
 
 $router->run();
 
+$a = 1;
+
 
 
