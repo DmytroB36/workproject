@@ -21,9 +21,7 @@ $router = new \Framework\Routing($request, $registry->get('routesPath'));
 
 $router->run();
 
-$a = 2;
-
-$b = "from branch";
+$a = 1;
 
 
 
